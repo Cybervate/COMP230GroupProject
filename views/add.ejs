@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
     <title>Add</title>
 </head>
 <body>
 
     <%- include('header') %>
-
-    <div>
-        <h1>Add CPU</h1>
+    <div class="addList">
+    <div class="addDiv">
+        <h2>Add CPU</h2>
         CPU Brand <input type="text" name="cpuBrand" id="cpuBrand">
         CPU Model <input type="text" name="cpuBrand" id="cpuModel">
         <button id="cpuBtn">Add CPU</button>
     </div>
-    <div>
-        <h1>Add GPU</h1>
+    <div class="addDiv">
+        <h2>Add GPU</h2>
         GPU Brand <input type="text" name="gpuBrand" id="gpuBrand">
         GPU Model <input type="text" name="gpuBrand" id="gpuModel">
         <button id="gpuBtn">Add GPU</button>
     </div>
-    <div>
-        <h1>Add Computer</h1>
+    <div class="addDiv">
+        <h2>Add Computer</h2>
         Brand <input type="text" name="compBrand" id="compBrand">
         Model <input type="text" name="compModel" id="compModel">
-
+        <br>
         CPU <select name="cpuList" id="cpuList">
             <% cpuList.forEach(cpu => { %>
                 <option value="<%= cpu.cpuId %>"><%= cpu.cpuBrand + " " + cpu.cpuModel %></option>
@@ -38,16 +39,19 @@
 
             <% }) %>
         </select>
+        <br>
         RAM (GB) <input type="number" placeholder="16" min="1" step="1" name="ramInput" id="ramInput">
         Storage (GB) <input type="number" placeholder="1000" min="1" step="1" name="diskInput" id="diskInput">
+        <br>
         Stock Available <input type="number" placeholder="100" min="0" step="1" name="stockInput" id="stockInput">
         Price ($) <input type="number" placeholder="1000" min="0" step="1" name="priceInput" id="priceInput">
         <button id="compBtn">Add Computer</button>
     </div>
-    <div>
-        <h1>Add User</h1>
+    <div class="addDiv">
+        <h2>Add User</h2>
         User Email <input type="text" name="userEmail" id="userEmail">
         <button id="userBtn">Add User</button>
+    </div>
     </div>
 </body>
 <script>

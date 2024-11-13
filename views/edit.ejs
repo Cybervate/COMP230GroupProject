@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Edit</title>
+</head>
+<body>
+
+    <%- include('header') %>
+    <div class="addList">
+    <div class="editDiv">
+        <h2>Edit Computer <%= entityData[0].compBrand %> <%= entityData[0].compModel %></h2>
+        Brand <input value="<%= entityData[0].compBrand %>" type="text" name="compBrand" id="compBrand">
+        Model <input value="<%= entityData[0].compModel %>" type="text" name="compModel" id="compModel">
+        <br>
+        CPU <select name="cpuList" id="cpuList">
+            <% cpuList.forEach(cpu => { %>
+                <option 
+                <% if (cpu.cpuId == entityData[0].compCpu) { %>
+                    selected
+                <% } %>
+                value="<%= cpu.cpuId %>"><%= cpu.cpuBrand + " " + cpu.cpuModel %></option>
+
+            <% }) %>
+        </select>
+        GPU <select name="gpuGlist" id="gpuList">
+            <% gpuList.forEach(gpu => { %>
+                <option
+                <% if (gpu.gpuId == entityData[0].compGpu) { %>
+                    selected
+                <% } %>
+                value="<%= gpu.gpuId %>"><%= gpu.gpuBrand + " " + gpu.gpuModel %></option>
+
+            <% }) %>
+        </select>
+        <br>
+        RAM (GB) <input value="<%= entityData[0].compRam%>" type="number" placeholder="16" min="1" step="1" name="ramInput" id="ramInput">
+        Storage (GB) <input value="<%= entityData[0].compDisk %>" type="number" placeholder="1000" min="1" step="1" name="diskInput" id="diskInput">
+        <br>
+        Stock Available <input value="<%= entityData[0].compStock %>" type="number" placeholder="100" min="0" step="1" name="stockInput" id="stockInput">
+        Price ($) <input value="<%= entityData[0].compPrice %>" type="number" placeholder="1000" min="0" step="1" name="priceInput" id="priceInput">
+        <br>
+        <button id="compBtn">Edit Computer</button>
+    </div>
+    </div>
+
+</body>
+<script>
+    document.getElementById('compBtn').addEventListener('click', function() {
+        const comp = {
+            compId: "<%= entityData[0].compId %>",
+            brand: document.getElementById('compBrand').value,
+            model: document.getElementById('compModel').value,
+            cpu: document.getElementById('cpuList').value,
+            gpu: document.getElementById('gpuList').value,
+            ram: document.getElementById('ramInput').value,
+            disk: document.getElementById('diskInput').value,
+            stock: document.getElementById('stockInput').value,
+            price: document.getElementById('priceInput').value
+        };
+
+        fetch('/editcomputer', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(comp)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success ", data);
+            alert("Computer " + data.data.brand + " " + data.data.model + " edited");
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error Editing Computer");
+        })
+
+    })
+</script>
+</html>

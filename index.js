@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const mysql = require('mysql2/promise');
+const path = require('path');
 const { equal } = require('assert');
 
 
@@ -82,6 +83,7 @@ async function getAllPurchases() {
 const port = 3000;
 
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
@@ -100,6 +102,36 @@ app.get("/add", async (req, res) => {
 
 app.get("/purchases", async (req, res) => {
     res.render('purchases', {purchaseList: await getAllPurchases()});
+})
+
+app.get('/edit/:entity/:id', async (req, res) => {
+    const { entity, id } = req.params;
+    
+    var entityData;
+
+    if (entity == 'computer') {
+
+        try {
+            const db = await mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                database: 'computer_store'
+            });
+    
+             [entityData] = await db.query(`SELECT * FROM (computers\nJOIN cpus ON computers.compCpu = cpus.cpuId\nJOIN gpus ON computers.compGpu = gpus.gpuId) WHERE compId = ${id}`);
+            console.log(entityData)
+        }
+        catch(err) {
+            console.log(err)
+        }
+        
+
+    }
+    else {
+        entityData = null;
+    }
+
+    res.render('edit', {entityData: entityData, cpuList: await getAll('cpus'), gpuList: await getAll('gpus')});
 })
 
 app.post('/filter', async (req, res) => {
@@ -301,6 +333,98 @@ app.post('/buy', async (req, res) => {
         console.log("/buy", err)
         // res.json({ message: 'Duplicate', data: data });
     }
+})
+
+app.post('/search', async (req, res) => {
+    const data = req.body;
+    console.log(data);
+
+    if (data.searchTerms.length == 0 || (data.searchTerms[0] == '' && data.searchTerms.length == 1)) {
+        res.json({ message: 'Data received successfully', data: await getAllComputers() });
+        return;
+    }
+
+    try {
+        const db = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            database: 'computer_store'
+        });
+
+        // const query = "SELECT * FROM computers JOIN cpus ON computers.compCpu = cpus.cpuId JOIN gpus ON computers.compGpu = gpus.gpuId WHERE compBrand in (?) OR compModel in (?) OR cpuBrand in (?) OR cpuModel in (?) OR gpuBrand in (?) OR gpuModel in (?)";
+
+        const pattern = `(^| )(${data.searchTerms.join('|')})( |$)`
+
+        const query = `SELECT * FROM computers JOIN cpus ON computers.compCpu = cpus.cpuId JOIN gpus ON computers.compGpu = gpus.gpuId WHERE compBrand REGEXP ? OR compModel REGEXP ? OR cpuBrand REGEXP ? OR cpuModel REGEXP ? OR gpuBrand REGEXP ? OR gpuModel REGEXP ?`;
+
+        const [results] = await db.query(query, [pattern, pattern, pattern, pattern, pattern, pattern ]);
+        res.json({ message: 'Data received successfully', data: results });
+    }
+    catch(err) {
+        console.log(err)
+    }
+})
+
+app.post('/editcomputer', async (req, res) => {
+    const data = req.body;
+    console.log(data);
+
+    try {
+        const db = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            database: 'computer_store'
+        });
+
+
+        const query = "UPDATE computers SET compBrand = ?, compModel = ?, compCpu = ?, compGpu = ?, compRam = ?, compDisk = ?, compStock = ?, compPrice = ? WHERE compId = ?";
+
+        await db.execute(query, [data.brand, data.model, data.cpu, data.gpu, data.ram, data.disk, data.stock, data.price, data.compId], (err, results) => {
+            if (err) {
+                console.log("Error editing computer: ", err);
+                return;
+            }
+
+            console.log("computer edit success: ", results);
+        })
+
+    }
+    catch(err) {
+        console.log(err)
+    }
+
+    res.json({ message: 'Data received successfully', data: data });
+})
+
+app.post('/removecomputer', async (req, res) => {
+    const data = req.body;
+    console.log(data);
+
+    try {
+        const db = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            database: 'computer_store'
+        });
+
+
+        const query = "DELETE FROM computers WHERE compId = ?";
+
+        await db.execute(query, [data.compId], (err, results) => {
+            if (err) {
+                console.log("Error removing computer: ", err);
+                return;
+            }
+
+            console.log("computer remove success: ", results);
+        })
+
+    }
+    catch(err) {
+        console.log(err)
+    }
+
+    res.json({ message: 'Data received successfully', data: data });
 })
 
 app.use((req, res) => {

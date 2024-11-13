@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
     <title>Computer Store</title>
 </head>
 <body>
 
     <%- include('header') %>
-
-    <div>
+    <div id="belowHeader">
+    <div id="filterDiv">
         <h2>Filters</h2>
         Price Min <input value="0" id="priceMin" type="number" min="0" step="1"> Price Max <input value="100000" id="priceMax" type="number" min="0" step="1">
         <br>
@@ -34,6 +35,10 @@
         </div>
         <br>
         <button id="filterBtn">Apply Filters</button>
+        <br>
+        <br>
+        <input id="searchInput" type="text" placeholder="Search Here...">
+        <button id="searchBtn">Search</button>
     </div>
 
     <div id="mainList">
@@ -44,12 +49,12 @@
                 <h4><%= "$" + comp.compPrice + " | " + comp.compStock + " In Stock" %></h4>
                 <p><%= "CPU: " + comp.cpuBrand + " " + comp.cpuModel + " GPU: " + comp.gpuBrand + " "+ comp.gpuModel + " Ram: " + comp.compRam + "GB Storage: " + comp.compDisk + "GB"%></p>
             </li>
-            Email: <input data-compid="<%= comp.compId %>" type="text" placeholder="example@email.com"> <button class="buyBtn" id="<%= comp.compId %>">Buy</button>
+            Email: <input data-compid="<%= comp.compId %>" type="text" placeholder="example@email.com"> <button class="buyBtn" id="<%= comp.compId %>">Buy</button> <button class="editBtn"><a class="editLink" href="/edit/computer/<%= comp.compId %>">Edit</a></button> <button data-removeid="<%= comp.compId %>" class="removeBtn">Remove</button>
         </ul>
         
         <% }) %>
     </div>
-
+</div>
 </body>
 <script>
     function activatePurchaseBtns(id) {
@@ -85,10 +90,42 @@
         })
     }
 
+    function activateRemoveBtns(id) {
+        console.log(id);
+        const comp = {
+            compId: parseInt(id)
+        };
+        const compName = String(document.querySelector('[data-comph3id="'+id+'"]').innerHTML);
+
+        fetch('/removecomputer', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(comp)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success ", data);
+
+            window.location.reload();
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error with purchase");
+        })
+    }
+
+
     function addListeners() {
         document.querySelectorAll(".buyBtn").forEach(btn => {
         btn.addEventListener('click', function () {
             activatePurchaseBtns(this.id);
+            })
+        })
+        document.querySelectorAll('.removeBtn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                activateRemoveBtns(this.dataset.removeid);
             })
         })
     }
@@ -160,7 +197,7 @@
                 <h4>${"$" + list[i].compPrice + " | " + list[i].compStock + " In Stock" }</h4>
                 <p>${"CPU: " + list[i].cpuBrand + " " + list[i].cpuModel + " GPU: " + list[i].gpuBrand + " "+ list[i].gpuModel + " Ram: " + list[i].compRam + "GB Storage: " + list[i].compDisk + "GB"}</p>
             </li>
-            Email: <input data-compid="${list[0].compId}" type="text" placeholder="example@email.com"> <button class="buyBtn" id="${list[0].compId}">Buy</button>
+            Email: <input data-compid="${list[0].compId}" type="text" placeholder="example@email.com"> <button class="buyBtn" id="${list[0].compId}">Buy</button> <button class="editBtn"><a class="editLink" href="/edit/computer/${list[0].compId}">Edit</a></button> <button data-removeid="${list[0].compId}" class="removeBtn">Remove</button>
         </ul>
         `
         }
@@ -170,5 +207,29 @@
         addListeners();
 
     }
+
+    document.getElementById('searchBtn').addEventListener('click', function() {
+
+        const searchTerms = document.getElementById('searchInput').value.split(' ');
+
+        const searchTermsJSON = {searchTerms: searchTerms};
+
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(searchTermsJSON)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Success ", data);
+                fillMainList(data.data);
+            })
+            .catch((error) => {
+                console.log("Error: ", error);
+                alert("Error with search");
+            })
+    })
 </script>
 </html>

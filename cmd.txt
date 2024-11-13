@@ -1,0 +1,50 @@
+CREATE TABLE Users (
+	userId integer AUTO_INCREMENT PRIMARY KEY,
+    userName varChar(40)
+);
+
+CREATE TABLE Users (
+	userEmail varChar(50) PRIMARY KEY
+);
+
+CREATE TABLE Cpus (
+	cpuId integer AUTO_INCREMENT PRIMARY KEY,
+    cpuBrand varChar(40),
+    cpuModel varChar(40)
+);
+
+CREATE TABLE Gpus (
+	gpuId integer AUTO_INCREMENT PRIMARY KEY,
+    gpuBrand varChar(40),
+    gpuModel varChar(40)
+);
+
+CREATE TABLE Computers (
+	compId integer AUTO_INCREMENT PRIMARY KEY,
+    compBrand varChar(40),
+    compModel varChar(40),
+    compCpu integer,
+    compGpu integer,
+    compRam integer,
+    compDisk integer,
+    compStock integer,
+    compPrice integer
+);
+
+CREATE TABLE Purchases (
+	purchaseId integer AUTO_INCREMENT PRIMARY KEY,
+    userId integer NOT NULL,
+    compId integer NOT NULL,
+    purchaseDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (compId) REFERENCES computers(compId)
+);
+
+CREATE TABLE Purchases(
+	purchaseId integer AUTO_INCREMENT PRIMARY KEY,
+    userEmail varChar(50) NOT NULL,
+    compId integer NOT NULL,
+    purchaseDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userEmail) REFERENCES users(userEmail),
+    FOREIGN KEY (compId) REFERENCES computers(compId)
+);

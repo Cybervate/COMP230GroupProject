@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Store</title>
+</head>
+<body>
+
+    <%- include('header') %>
+
+    <div>
+        <h2>Filters</h2>
+        Price Min <input value="0" id="priceMin" type="number" min="0" step="1"> Price Max <input value="100000" id="priceMax" type="number" min="0" step="1">
+        <br>
+        RAM Min <input value="0" id="ramMin" type="number" min="0" step="1"> RAM Max <input value="100000" id="ramMax" type="number" min="0" step="1">
+        <br>
+        Storage Min <input value="0" id="storageMin" type="number" min="0" step="1"> storage Max <input value="100000" id="storageMax" type="number" min="0" step="1">
+        <br>
+        <div id="cpuBrands">
+        CPU Brands <% cpuBrandList.forEach(brand => { %>
+
+            <input id="<%= brand.cpuBrand %>" type="checkbox" checked> <label for="<%= brand.cpuBrand %>"><%= brand.cpuBrand %></label>
+
+        <% }) %>
+        </div>
+        <br>
+        <div id="gpuBrands">
+        GPU Brands <% gpuBrandList.forEach(brand => { %>
+
+            <input id="<%= brand.gpuBrand %>" type="checkbox" checked> <label for="<%= brand.gpuBrand %>"><%= brand.gpuBrand %></label>
+
+        <% }) %>
+        </div>
+        <br>
+        <button id="filterBtn">Apply Filters</button>
+    </div>
+
+    <div id="mainList">
+    <% customData.forEach(comp => { %>
+        <ul>
+            <li>
+                <h3 data-comph3id="<%= comp.compId %>"><%= comp.compBrand + " " + comp.compModel %></h3>
+                <h4><%= "$" + comp.compPrice + " | " + comp.compStock + " In Stock" %></h4>
+                <p><%= "CPU: " + comp.cpuBrand + " " + comp.cpuModel + " GPU: " + comp.gpuBrand + " "+ comp.gpuModel + " Ram: " + comp.compRam + "GB Storage: " + comp.compDisk + "GB"%></p>
+            </li>
+            Email: <input data-compid="<%= comp.compId %>" type="text" placeholder="example@email.com"> <button class="buyBtn" id="<%= comp.compId %>">Buy</button>
+        </ul>
+        
+        <% }) %>
+    </div>
+
+</body>
+<script>
+    function activatePurchaseBtns(id) {
+        console.log(id);
+        const purchase = {
+            email: document.querySelector('[data-compid="'+id+'"]').value,
+            compId: parseInt(id)
+        };
+        const compName = String(document.querySelector('[data-comph3id="'+id+'"]').innerHTML);
+
+        fetch('/buy', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(purchase)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success ", data);
+
+            if (data.message == "Out of Stock") {
+                alert(compName + " is out of stock");
+            }
+            else {
+                alert(data.data.email + " bought " + compName);
+            }
+            window.location.reload();
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error with purchase");
+        })
+    }
+
+    function addListeners() {
+        document.querySelectorAll(".buyBtn").forEach(btn => {
+        btn.addEventListener('click', function () {
+            activatePurchaseBtns(this.id);
+            })
+        })
+    }
+    addListeners();
+    
+
+    document.getElementById("filterBtn").addEventListener('click', function() {
+
+        let cpuBrands = [];
+        for (let child of document.getElementById('cpuBrands').childNodes) {
+            if (child.tagName === 'INPUT' && child.checked) {
+                cpuBrands.push(child.id);
+            }
+        }
+
+        let gpuBrands = [];
+        for (let child of document.getElementById('gpuBrands').childNodes) {
+            if (child.tagName === 'INPUT' && child.checked) {
+                gpuBrands.push(child.id);
+            }
+        }
+
+        const filters = {
+            priceRange: [parseInt(document.getElementById('priceMin').value), parseInt(document.getElementById('priceMax').value)],
+            ramRange: [parseInt(document.getElementById('ramMin').value), parseInt(document.getElementById('ramMax').value)],
+            storageRange: [parseInt(document.getElementById('storageMin').value), parseInt(document.getElementById('storageMax').value)],
+            cpuBrands: cpuBrands,
+            gpuBrands: gpuBrands
+        }
+
+        if (filters.priceRange[0] > filters.priceRange[1]) {
+            filters.priceRange[1] = 100000;
+        }
+        if (filters.ramRange[0] > filters.ramRange[1]) {
+            filters.ramRange[1] = 100000;
+        }
+        if (filters.storageRange[0] > filters.storageRange[1]) {
+            filters.storageRange[1] = 100000;
+        }
+
+        console.log(filters);
+        fetch('/filter', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(filters)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Success ", data);
+                fillMainList(data.data);
+            })
+            .catch((error) => {
+                console.log("Error: ", error);
+                alert("Error with filters");
+            })
+
+    });
+
+    function fillMainList(list) {
+        let html = '';
+
+        for (let i = 0; i < list.length; i++) {
+            html += `
+        <ul>
+            <li>
+                <h3 data-comph3id="${list[i].compId}">${list[i].compBrand + ' ' + list[i].compModel}</h3>
+                <h4>${"$" + list[i].compPrice + " | " + list[i].compStock + " In Stock" }</h4>
+                <p>${"CPU: " + list[i].cpuBrand + " " + list[i].cpuModel + " GPU: " + list[i].gpuBrand + " "+ list[i].gpuModel + " Ram: " + list[i].compRam + "GB Storage: " + list[i].compDisk + "GB"}</p>
+            </li>
+            Email: <input data-compid="${list[0].compId}" type="text" placeholder="example@email.com"> <button class="buyBtn" id="${list[0].compId}">Buy</button>
+        </ul>
+        `
+        }
+
+        document.getElementById('mainList').innerHTML = html;
+
+        addListeners();
+
+    }
+</script>
+</html>

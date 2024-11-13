@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add</title>
+</head>
+<body>
+
+    <%- include('header') %>
+
+    <div>
+        <h1>Add CPU</h1>
+        CPU Brand <input type="text" name="cpuBrand" id="cpuBrand">
+        CPU Model <input type="text" name="cpuBrand" id="cpuModel">
+        <button id="cpuBtn">Add CPU</button>
+    </div>
+    <div>
+        <h1>Add GPU</h1>
+        GPU Brand <input type="text" name="gpuBrand" id="gpuBrand">
+        GPU Model <input type="text" name="gpuBrand" id="gpuModel">
+        <button id="gpuBtn">Add GPU</button>
+    </div>
+    <div>
+        <h1>Add Computer</h1>
+        Brand <input type="text" name="compBrand" id="compBrand">
+        Model <input type="text" name="compModel" id="compModel">
+
+        CPU <select name="cpuList" id="cpuList">
+            <% cpuList.forEach(cpu => { %>
+                <option value="<%= cpu.cpuId %>"><%= cpu.cpuBrand + " " + cpu.cpuModel %></option>
+
+            <% }) %>
+        </select>
+        GPU <select name="gpuGlist" id="gpuList">
+            <% gpuList.forEach(gpu => { %>
+                <option value="<%= gpu.gpuId %>"><%= gpu.gpuBrand + " " + gpu.gpuModel %></option>
+
+            <% }) %>
+        </select>
+        RAM (GB) <input type="number" placeholder="16" min="1" step="1" name="ramInput" id="ramInput">
+        Storage (GB) <input type="number" placeholder="1000" min="1" step="1" name="diskInput" id="diskInput">
+        Stock Available <input type="number" placeholder="100" min="0" step="1" name="stockInput" id="stockInput">
+        Price ($) <input type="number" placeholder="1000" min="0" step="1" name="priceInput" id="priceInput">
+        <button id="compBtn">Add Computer</button>
+    </div>
+    <div>
+        <h1>Add User</h1>
+        User Email <input type="text" name="userEmail" id="userEmail">
+        <button id="userBtn">Add User</button>
+    </div>
+</body>
+<script>
+    document.getElementById('cpuBtn').addEventListener('click', function() {
+        const cpu = {
+            cpuBrand: document.getElementById('cpuBrand').value,
+            cpuModel: document.getElementById('cpuModel').value
+        }
+
+        fetch('/addcpu', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(cpu)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success: ", data);
+            alert("CPU: " + data.data.cpuBrand + " " + data.data.cpuModel + " added");
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error adding cpu");
+        });
+
+    })
+
+    document.getElementById('gpuBtn').addEventListener('click', function() {
+        const gpu = {
+            gpuBrand: document.getElementById('gpuBrand').value,
+            gpuModel: document.getElementById('gpuModel').value
+        }
+
+        fetch('/addgpu', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(gpu)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success: ", data);
+            alert("GPU: " + data.data.gpuBrand + " " + data.data.gpuModel + " added");
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error adding gpu");
+        });
+
+    })
+
+    document.getElementById('userBtn').addEventListener('click', function() {
+        const user = {userEmail: document.getElementById("userEmail").value};
+
+        fetch('/adduser', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(user)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success: ", data);
+
+            if (data.message == "Duplicate") {
+                alert("User: " + data.data.userEmail + " already exists");
+            }
+            else {
+                alert("User: " + data.data.userEmail + " added");
+            }
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error adding user");
+        });
+
+    })
+
+    document.getElementById('compBtn').addEventListener('click', function() {
+        const comp = {
+            brand: document.getElementById('compBrand').value,
+            model: document.getElementById('compModel').value,
+            cpu: document.getElementById('cpuList').value,
+            gpu: document.getElementById('gpuList').value,
+            ram: document.getElementById('ramInput').value,
+            disk: document.getElementById('diskInput').value,
+            stock: document.getElementById('stockInput').value,
+            price: document.getElementById('priceInput').value
+        };
+
+        fetch('/addcomputer', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(comp)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success ", data);
+            alert("Computer " + data.data.brand + " " + data.data.model + " added");
+        })
+        .catch((error) => {
+            console.log("Error: ", error);
+            alert("Error Adding Computer");
+        })
+
+    })
+
+</script>
+</html>

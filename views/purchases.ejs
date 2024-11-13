@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchases</title>
+</head>
+<body>
+
+    <%- include('header') %>
+
+    <% purchaseList.forEach(purchase => { %>
+        <ul>
+            <li>
+                <%= purchase.userEmail + " purchased " + purchase.compBrand + " " + purchase.compModel + " | " + purchase.purchaseDate %>
+            </li>
+        </ul>
+        
+        <% }) %>
+        
+</body>
+</html>

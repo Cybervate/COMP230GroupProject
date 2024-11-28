@@ -1,0 +1,94 @@
+// DML
+
+Get all computers, joins in order to get cpu and cpu names:
+
+SELECT * FROM computers\nJOIN cpus ON computers.compCpu = cpus.cpuId\nJOIN gpus ON computers.compGpu = gpus.gpuId
+
+Get purchase history ordered by purchase date:
+
+SELECT purchases.userEmail, purchases.purchaseDate, computers.compBrand, computers.compModel\nFROM computers\nJOIN purchases ON computers.compId = purchases.compId ORDER BY purchases.purchaseDate DESC
+
+Get Computer by id, joins in order to get cpu and cpu names:
+
+SELECT * FROM (computers\nJOIN cpus ON computers.compCpu = cpus.cpuId\nJOIN gpus ON computers.compGpu = gpus.gpuId) WHERE compId = ?
+
+Filters computers based on specifications:
+
+SELECT * FROM computers JOIN cpus ON computers.compCpu = cpus.cpuId JOIN gpus ON computers.compGpu = gpus.gpuId WHERE compPrice >= ? AND compPrice <= ? AND compRam >= ? AND compRam <= ? AND compDisk >= ? AND compDisk <= ? AND cpuBrand IN (?) AND gpuBrand IN (?)
+
+Add CPU:
+
+INSERT INTO cpus (cpuBrand, cpuModel) VALUES (?, ?)
+
+Add GPU:
+
+INSERT INTO gpus (gpuBrand, gpuModel) VALUES (?, ?)
+
+Add Computer:
+
+INSERT INTO computers (compBrand, compModel, compCpu, compGpu, compRam, compDisk, compStock, compPrice) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
+Add User:
+
+INSERT INTO users (userEmail) VALUES (?)
+
+Get Computer Stock:
+0
+SELECT compStock FROM computers WHERE compId = ?
+
+Buy Computer:
+
+UPDATE computers\nSET compStock = compStock - 1\nWHERE compId = ?
+
+INSERT INTO purchases (userEmail, compId) VALUES (?, ?)
+
+Search Keywords, regex pattern is (^| )(keyword|keyword|keyword)( |$):
+
+SELECT * FROM computers JOIN cpus ON computers.compCpu = cpus.cpuId JOIN gpus ON computers.compGpu = gpus.gpuId WHERE compBrand REGEXP ? OR compModel REGEXP ? OR cpuBrand REGEXP ? OR cpuModel REGEXP ? OR gpuBrand REGEXP ? OR gpuModel REGEXP ?
+
+Update Computer:
+
+UPDATE computers SET compBrand = ?, compModel = ?, compCpu = ?, compGpu = ?, compRam = ?, compDisk = ?, compStock = ?, compPrice = ? WHERE compId = ?
+
+Delete Computer:
+
+DELETE FROM computers WHERE compId = ?
+
+// DDL
+
+CREATE TABLE Users (
+	userEmail varChar(50) PRIMARY KEY
+);
+
+CREATE TABLE Cpus (
+	cpuId integer AUTO_INCREMENT PRIMARY KEY,
+    cpuBrand varChar(40),
+    cpuModel varChar(40)
+);
+
+CREATE TABLE Gpus (
+	gpuId integer AUTO_INCREMENT PRIMARY KEY,
+    gpuBrand varChar(40),
+    gpuModel varChar(40)
+);
+
+CREATE TABLE Computers (
+	compId integer AUTO_INCREMENT PRIMARY KEY,
+    compBrand varChar(40),
+    compModel varChar(40),
+    compCpu integer,
+    compGpu integer,
+    compRam integer,
+    compDisk integer,
+    compStock integer,
+    compPrice integer
+);
+
+CREATE TABLE Purchases(
+	purchaseId integer AUTO_INCREMENT PRIMARY KEY,
+    userEmail varChar(50) NOT NULL,
+    compId integer NOT NULL,
+    purchaseDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userEmail) REFERENCES users(userEmail),
+    FOREIGN KEY (compId) REFERENCES computers(compId)
+);

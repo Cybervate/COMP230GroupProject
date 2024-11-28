@@ -87,6 +87,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
+// Main get pages
+
 app.get("/", async (req, res) => {
 
     res.render('index', {
@@ -133,6 +135,9 @@ app.get('/edit/:entity/:id', async (req, res) => {
 
     res.render('edit', {entityData: entityData, cpuList: await getAll('cpus'), gpuList: await getAll('gpus')});
 })
+
+
+// post requests, for communicating with db
 
 app.post('/filter', async (req, res) => {
     const data = req.body;
@@ -427,17 +432,12 @@ app.post('/removecomputer', async (req, res) => {
     res.json({ message: 'Data received successfully', data: data });
 })
 
+// 404 page
 app.use((req, res) => {
     res.status(404).send('<h1>404 Not Found</h1>');
 });
 
+// start server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
 });
-
-// db.end((err) => {
-//     if (err) {
-//         console.error('Error closing the database connection: ', err);
-//     }
-//     console.log("db connection closed");
-// })

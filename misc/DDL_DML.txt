@@ -33,7 +33,7 @@ Add User:
 INSERT INTO users (userEmail) VALUES (?)
 
 Get Computer Stock:
-0
+
 SELECT compStock FROM computers WHERE compId = ?
 
 Buy Computer:
